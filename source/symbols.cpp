@@ -37,7 +37,7 @@ namespace Symbols
 	};
 
 	const std::vector<Symbol> UsermessagesSym = { // "UserMessageBegin"
-		Symbol::FromName("_ZL14g_UserMessages"), // TODO
+		Symbol::FromSignature("\x81\xC3****\x83\xEC\x0C\x8D\xB3****\x56\xE8****\x8D\x83\xEC\x07\x00\x00\x83\xC4\x0C\x50\x8D\x83\xEC\xBA\x11\xFF", 0xB), // server_srv.so: _ZL14g_UserMessages (PIC global)
 		Symbol::FromSignature("\x55\x48\x8D*****\xBA\x01\x00\x00\x00\x48\x89\xE5\x53\x48\x83\xEC\x08\x2A\x2A\x2A\x2A"), // 55 48 8D ?? ?? ?? ?? ?? BA 01 00 00 00 48 89 E5 53 48 83 EC 08 2A 2A 2A 2A
 		Symbol::FromSignature("\x2A\x2A\x2A\x2A\xE8****\x8B\xD0\x83\xFA\xFF**\xFF\x75\x0C"), // ?? ?? ?? ?? E8 ?? ?? ?? ?? 8B D0 83 FA FF ?? ?? FF 75 0C
 		Symbol::FromSignature("\x48\x89\x5C\x24\x08\x57\x48\x83\xEC\x20\x48\x8B\xF9\x48\x8B\xDA\x48\x8B\x0D****\xE8****", 0x10), // 48 89 5C 24 08 57 48 83 EC 20 48 8B F9 48 8B DA 48 8B 0D ?? ?? ?? ?? E8 ?? ?? ?? ??
@@ -97,18 +97,18 @@ namespace Symbols
 	const Symbol lua_errorSym = Symbol::FromName("lua_error");
 
 	const std::vector<Symbol> CGetSym = { // 64x ToDo
-		Symbol::FromName("get"), // TODO
+		Symbol::FromSignature("\x81\xC6****\x53\x83\xEC\x38\x8D\xBE****", 0xC), // server_srv.so: get (PIC global)
 	};
 
 	const std::vector<Symbol> gEntListSym = { // Search for "Master was null or not a master!\n"
-		Symbol::FromName("gEntList"),
+		Symbol::FromSignature("\x81\xC7****\x56\x53\x83\xEC\x48\x8D\xB7****", 0xD), // server_srv.so: gEntList (PIC global)
 		Symbol::FromSignature("\x55\x48\x8D\x3D\x2A\x2A\x2A\x2A\x48\x89\xE5\x53\x48\x83\xEC\x08\xC6\x05\x2A\x2A\x43\x01\x00", 0x111),
 		Symbol::FromSignature("****\x6A\x00\x6A\x00\x6A\x00\x6A\x00\x57\x6A\x00\xE8****\x8B\xD8\x85\xDB"), // ?? ?? ?? ?? 6A 00 6A 00 6A 00 6A 00 57 6A 00 E8 ?? ?? ?? ?? 8B D8 85 DB
 		Symbol::FromSignature("\x48\x89\x5C\x24\x08\x57\x48\x83\xEC\x40\x48\x8B\xFA\x48\x85\xC9", 0x1C),
 	};
 
 	const std::vector<Symbol> svSym = { // Annoying stuff
-		Symbol::FromName("sv"),
+		Symbol::FromSignature("\x81\xC2****\x8D\x82****\x83\x78\x04\x01", 0x8), // engine_srv.so: sv (PIC global)
 		Symbol::FromName("sv"),
 		Symbol::FromSignature("\x56\x57\xB9****\xE8****\xB9****\xC7\x05********", 0x2),
 		Symbol::FromSignature("\x48\x89\x5C\x24\x08\x48\x89\x6C\x24\x10\x48\x89\x74\x24\x18\x57\x48\x83\xEC\x20\x48\x8D\x0D****\xE8****\x33\xED\x48\x8D\x05****\x48\x8D\x0D****\x48\x89\x05****", 0x14),
@@ -721,21 +721,21 @@ namespace Symbols
 	};
 
 	const std::vector<Symbol> g_FrameSnapshotManagerSym = {
-		Symbol::FromName("framesnapshotmanager"),
+		Symbol::FromSignature("\x81\xC7****\x56\x53\x83\xEC\x1C\x8B\xB7****\x89\xFB", 0xD), // engine_srv.so: framesnapshotmanager (PIC global)
 		Symbol::FromSignature("\x48\x8B\x2A\x2A\x2A\x2A\x2A\x48\x8B\x38\x48\x8B\x07*\x50\x10\x48\x8D\x43\x15"), // 48 8B ?? ?? ?? ?? ?? 48 8B 38 48 8B 07 ?? 50 10 48 8D 43 15 || "framesnapshotmanager->LevelChanged()" || "sv.Clear()"
 		Symbol::FromSignature("\x2A\x2A\x2A\x2A\x83\xC4\x04\x8B\x01\xFF\x50\x04\x6A\x40"), // ?? ?? ?? ?? 83 C4 04 8B 01 FF 50 04 6A 40 || "framesnapshotmanager"
 		Symbol::FromSignature("\x40\x55\x53\x56\x57\x41\x55\x41\x56\x48\x8D\xAC\x24\x58\xFD\xFF\xFF", 0x3F6)
 	};
 
 	const std::vector<Symbol> g_PropTypeFnsSym = {
-		Symbol::FromName("g_PropTypeFns"),
+		Symbol::FromSignature("\x81\xC3****\x81\xEC\x6C\x03\x00\x00\x8B\x45\x08\x8B\x78\x08\x85\xFF\x0F\x84****\xFF\x75\x10\x8D\x47\x08\xFF\x75\x0C\x8D\xB5\x9C\xFC\xFF\xFF\x50\x56\xE8****\x8D\x83\x74\xC1\xFF\xFF\x89\xBD\xB8\xFD\xFF\xFF\x89\x85\x9C\xFC\xFF\xFF\x58\x5A\x6A\x00\x56\x31\xF6\xE8****\x8B\x8F\x30\x01\x00\x00\x83\xC4\x10\x85\xC9\x0F\x8E****\x8D\x83\x6C\x03\xF7\xFF\x89\xF9\x89\x85\x8C\xFC\xFF\xFF\x8D\x83****", 0x6F), // engine_srv.so: g_PropTypeFns (PIC global)
 		Symbol::FromSignature("\x55\x48\x89\xE5\x41\x57\x41\x56\x41\x55\x49\x89\xF5\x41\x54\x53\x48\x83\xEC\x08\x4C\x8B\x67\x20\xE8\x2A\x2A\x2A\x2A\x41\x8B\x55\x1C", 0x51), // 55 48 89 E5 41 57 41 56 41 55 49 89 F5 41 54 53 48 83 EC 08 4C 8B 67 20 E8 ? ? ? ? 41 8B 55 1C
 		Symbol::FromSignature("\x55\x8B\xEC\x8B\x4D\x08\x83\xEC\x28", 0x10B), //55 8B EC 8B 4D 08 83 EC 28
 		Symbol::FromSignature("\x40\x55\x53\x56\x57\x41\x54\x41\x55\x41\x56\x41\x57\x48\x8D\xAC\x24\x88\xFB\xFF\xFF", 0x733), //40 55 53 56 57 41 54 41 55 41 56 41 57 48 8D AC 24 88 FB FF FF
 	};
 
 	const std::vector<Symbol> g_BSPDataSym = { // Search CM_Vis
-		Symbol::FromName("g_BSPData"),
+		Symbol::FromSignature("\x81\xC3****\x83\xEC\x38\x8B\x75\x08\x8D\x83****", 0xE), // engine_srv.so: g_BSPData (PIC global)
 		Symbol::FromSignature("\x55\x83\xF9\x02", 0x1F), // 55 83 F9 02
 		Symbol::FromSignature("\x55\x8B\xEC\x51\x8B\x4D\x14", 0xB3), // 55 83 F9 02
 		Symbol::FromSignature("\x40\x53\x48\x83\xEC\x30\x0F\xB6\x1D\x2A\x2A\x2A\x2A", 0xD), // Search for "gmod_uncache_test" and find CM_FreeMap
@@ -1219,7 +1219,7 @@ namespace Symbols
 	};
 
 	const std::vector<Symbol> net_socketsSym = {
-		Symbol::FromName("_ZL11net_sockets"),
+		Symbol::FromSignature("\x81\xC6****\x53\x83\xEC\x6C\x8B\x5D\x08\xC1\xE3\x04\x03\x9E****", 0x12), // engine_srv.so: _ZL11net_sockets (PIC global)
 	};
 
 	const std::vector<Symbol> Filter_SendBanSym = {

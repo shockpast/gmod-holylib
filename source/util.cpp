@@ -866,6 +866,8 @@ void Util::AddDetour()
 	server = Detour::ResolveSymbolWithOffset<IServer>( engine_loader.GetModule(), Symbols::svSym );
 	if (!server)
 		server = Detour::ResolveSymbolNoDereference<IServer>( engine_loader, Symbol::FromName( "?sv@@3VCGameServer@@A" ) );
+#elif defined(SYSTEM_LINUX) && ARCHITECTURE_IS_X86
+	server = Detour::ResolveSymbol<IServer>( engine_loader, Symbols::svSym );
 #else
 	server = InterfacePointers::Server();
 #endif

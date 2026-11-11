@@ -188,7 +188,7 @@ byte m_##name = 0;
 		return CheckValue("get function", strName, pFunc != nullptr);
 	}
 
-	extern void* GetFunction(void* pModule, Symbol pSymbol);
+	extern void* GetFunction(void* pModule, const Symbol& pSymbol);
 	extern void Create(Detouring::Hook* pHook, const char* strName, void* pModule, Symbol pSymbol, void* pHookFunc, unsigned int category = 0, bool bEnable = true);
 	extern void Remove(unsigned int category); // 0 = All
 	// Only works with detours that went through Detour::Create!
@@ -209,14 +209,10 @@ byte m_##name = 0;
 			return nullptr;
 
 	#if defined SYSTEM_WINDOWS
-		auto iface = reinterpret_cast<T**>(symfinder.Resolve(
-			pLoader.GetModule(), pSymbol.name.c_str(), pSymbol.length
-		));
+		auto iface = reinterpret_cast<T**>(GetFunction(pLoader.GetModule(), pSymbol));
 		return iface != nullptr ? *iface : nullptr;
 	#elif defined SYSTEM_POSIX
-		return reinterpret_cast<T*>(symfinder.Resolve(
-			pLoader.GetModule(), pSymbol.name.c_str(), pSymbol.length
-		));
+		return reinterpret_cast<T*>(GetFunction(pLoader.GetModule(), pSymbol));
 	#endif
 	}
 
@@ -295,14 +291,10 @@ byte m_##name = 0;
 			return nullptr;
 
 	#if defined SYSTEM_WINDOWS
-		auto iface = reinterpret_cast<T**>(symfinder.Resolve(
-			pLoader.GetModule(), pSymbol->name.c_str(), pSymbol->length
-		));
+		auto iface = reinterpret_cast<T**>(GetFunction(pLoader.GetModule(), *pSymbol));
 		return iface != nullptr ? *iface : nullptr;
 	#elif defined SYSTEM_POSIX
-		return reinterpret_cast<T*>(symfinder.Resolve(
-			pLoader.GetModule(), pSymbol->name.c_str(), pSymbol->length
-		));
+		return reinterpret_cast<T*>(GetFunction(pLoader.GetModule(), *pSymbol));
 	#endif
 	}
 
@@ -315,9 +307,7 @@ byte m_##name = 0;
 		if (!pSymbol)
 			return nullptr;
 
-		return reinterpret_cast<T*>(symfinder.Resolve(
-			pLoader.GetModule(), pSymbol->name.c_str(), pSymbol->length
-		));
+		return reinterpret_cast<T*>(GetFunction(pLoader.GetModule(), *pSymbol));
 	}
 
 	template<class T>
@@ -325,9 +315,7 @@ byte m_##name = 0;
 		SourceSDK::FactoryLoader& pLoader, Symbol& pSymbol
 	)
 	{
-		return reinterpret_cast<T*>(symfinder.Resolve(
-			pLoader.GetModule(), pSymbol.name.c_str(), pSymbol.length
-		));
+		return reinterpret_cast<T*>(GetFunction(pLoader.GetModule(), pSymbol));
 	}
 
 	/*
@@ -335,7 +323,7 @@ byte m_##name = 0;
 
 		Let's take per example g_PathIDTable
 
-		To retrieve it on x86 we need to use the symbol cause it's the simplest way, but on x64 we need to find a workaround.
+		On Linux x86, GetFunction resolves PIC global signatures directly; the instruction decoding below is for the other platforms.
 
 		So i (and grok) end up with the idea to use the signature of a function that call g_PathIDTable somewhere and then use a offset to get the address of g_PathIDTable.
 
@@ -366,6 +354,9 @@ byte m_##name = 0;
 			return nullptr;
 		}
 
+#if defined(SYSTEM_LINUX) && ARCHITECTURE_IS_X86
+		return reinterpret_cast<T*>(matchAddr);
+#else
 	#if defined(SYSTEM_WINDOWS)
 		uint8_t* ip = reinterpret_cast<uint8_t*>((char*)(matchAddr) + pSymbol->offset);
 	#else
@@ -453,6 +444,7 @@ byte m_##name = 0;
 
 		Warning(PROJECT_NAME ": Failed to match LEA bytes!\n");
 		return nullptr;
+#endif
 	}
 
 	inline void* GetFunction(void* pModule, std::vector<Symbol> pSymbols)

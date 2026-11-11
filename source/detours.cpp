@@ -1,6 +1,12 @@
 #include "detours.h"
 #include <convar.h>
 #include "tier0/dbg.h"
+#include <cstring>
+
+#if defined(SYSTEM_LINUX) && ARCHITECTURE_IS_X86
+#include <elf.h>
+#include <link.h>
+#endif
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -10,11 +16,70 @@
 #endif
 
 SymbolFinder Detour::symfinder;
-void* Detour::GetFunction(void* pModule, Symbol pSymbol)
+#if defined(SYSTEM_LINUX) && ARCHITECTURE_IS_X86
+static void* FindLinux32Signature(void* pModule, const Symbol& symbol)
 {
-	// We don't ensure safety as if pModule is nullptr we should have checked before calling, else debugging gets painful
-	// if (!pModule)
-	//	return nullptr;
+	if (!pModule || !symbol.length)
+		return nullptr;
+
+	const auto* map = static_cast<const link_map*>(pModule);
+	const uintptr_t base = map->l_addr;
+	const auto* header = reinterpret_cast<const Elf32_Ehdr*>(base);
+	if (std::memcmp(header->e_ident, ELFMAG, SELFMAG) != 0 ||
+		header->e_ident[EI_CLASS] != ELFCLASS32 || header->e_ident[EI_DATA] != ELFDATA2LSB ||
+		header->e_machine != EM_386 || header->e_type != ET_DYN)
+		return nullptr;
+
+	const auto* segments = reinterpret_cast<const Elf32_Phdr*>(base + header->e_phoff);
+	const auto* pattern = reinterpret_cast<const uint8_t*>(symbol.name.data());
+	// The dependency scanner assumes executable code starts at RVA zero.
+	// Current SRCDS libraries instead have a separate executable PT_LOAD.
+	for (uint16_t segment = 0; segment < header->e_phnum; ++segment)
+	{
+		const auto& phdr = segments[segment];
+		if (phdr.p_type != PT_LOAD || (phdr.p_flags & (PF_R | PF_X)) != (PF_R | PF_X) ||
+			phdr.p_filesz < symbol.length)
+			continue;
+
+		auto* begin = reinterpret_cast<uint8_t*>(base + phdr.p_vaddr);
+		const size_t last = phdr.p_filesz - symbol.length;
+		for (size_t position = 0; position <= last; ++position)
+		{
+			size_t byte = 0;
+			while (byte < symbol.length && (pattern[byte] == '*' || pattern[byte] == begin[position + byte]))
+				++byte;
+
+			if (byte == symbol.length)
+				return begin + position;
+		}
+	}
+
+	return nullptr;
+}
+#endif
+
+void* Detour::GetFunction(void* pModule, const Symbol& pSymbol)
+{
+#if defined(SYSTEM_LINUX) && ARCHITECTURE_IS_X86
+	if (pSymbol.type == Symbol::Type::Signature)
+	{
+		void* address = FindLinux32Signature(pModule, pSymbol);
+		if (address && pSymbol.offset)
+		{
+			const auto* match = static_cast<const uint8_t*>(address);
+			// The PC thunk returns to ADD reg, imm32, where this signature starts.
+			// offset selects a direct GOTOFF disp32, never a GOT pointer slot.
+			int32_t gotDisplacement;
+			int32_t globalDisplacement;
+			std::memcpy(&gotDisplacement, match + 2, sizeof(gotDisplacement));
+			std::memcpy(&globalDisplacement, match + pSymbol.offset, sizeof(globalDisplacement));
+			// Return the address of the global's storage, preserving caller dereferences.
+			return reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(match) + gotDisplacement + globalDisplacement);
+		}
+
+		return address;
+	}
+#endif
 
 	return symfinder.Resolve(pModule, pSymbol.name.c_str(), pSymbol.length);
 }
