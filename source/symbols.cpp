@@ -68,29 +68,15 @@ namespace Symbols
 
 	const Symbol lua_rawgetiSym = Symbol::FromName("lua_rawgeti");
 
-	const Symbol lj_tab_newSymN = Symbol::FromName("lj_tab_new");
-	const Symbol lj_tab_newSym = {
-		Symbol::FromSignature("\x83\xEC*\x8B\x4C\x24*\x89\x5C\x24"),
-		lj_tab_newSymN,
-		lj_tab_newSymN,
-		lj_tab_newSymN,
-	};
-
-	const Symbol lj_gc_barrierfSymN = Symbol::FromName("lj_gc_barrierf");
-	const Symbol lj_gc_barrierfSym = {
-		Symbol::FromSignature("\x53\x8B\x4C\x24*\x8B\x5C\x24"),
-		lj_gc_barrierfSymN,
-		lj_gc_barrierfSymN,
-		lj_gc_barrierfSymN,
-	};
-
-	const Symbol lj_tab_getSymN = Symbol::FromName("lj_tab_get");
-	const Symbol lj_tab_getSym = {
-		Symbol::FromSignature("\x56\x53\xE8****\x81\xC2****\x83\xEC*\x8B\x74\x24*\x8B\x5C\x24"),
-		lj_tab_getSymN,
-		lj_tab_getSymN,
-		lj_tab_getSymN,
-	};
+#if defined(SYSTEM_LINUX) && ARCHITECTURE_IS_X86
+	const Symbol lj_tab_newSym = Symbol::FromSignature("\x83\xEC*\x8B\x4C\x24*\x89\x5C\x24");
+	const Symbol lj_gc_barrierfSym = Symbol::FromSignature("\x53\x8B\x4C\x24*\x8B\x5C\x24");
+	const Symbol lj_tab_getSym = Symbol::FromSignature("\x56\x53\xE8****\x81\xC2****\x83\xEC*\x8B\x74\x24*\x8B\x5C\x24");
+#else
+	const Symbol lj_tab_newSym = Symbol::FromName("lj_tab_new");
+	const Symbol lj_gc_barrierfSym = Symbol::FromName("lj_gc_barrierf");
+	const Symbol lj_tab_getSym = Symbol::FromName("lj_tab_get");
+#endif
 
 	const Symbol lua_setfenvSym = Symbol::FromName("lua_setfenv");
 
